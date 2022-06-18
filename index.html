@@ -17,18 +17,30 @@
 
                 <div class="container" data-bind="visible: chapter() == 1">
                     <div class="input">
+                        <label for="function">Function:</label>
+                        <input type="text" name="function" id="function"
+                            placeholder="f(x)" data-bind="value: fn" />
+                    </div>
+
+                    <div class="input">
                         <label for="domain">Domain:</label>
-                        <input type="text" name="domain" id="domain" />
+                        <input class="lbl" type="text" name="domainname" id="domain-name" />
+                        <input type="text" name="domain" id="domain"
+                            data-bind="value: domain" />
                     </div>
 
                     <div class="input">
                         <label for="codomain">Co-Domain:</label>
-                        <input type="text" name="codomain" id="codomain" />
+                        <input class="lbl" type="text" name="codomainname" id="codomain-name" />
+                        <input type="text" name="codomain" id="codomain"
+                            data-bind="value: codomain" />
                     </div>
 
                     <div class="input">
                         <label for="rel">Relation:</label>
-                        <input type="text" name="relation" id="rel" />
+                        <input class="lbl" type="text" name="relname" id="rel-name" />
+                        <input type="text" name="relation" id="rel"
+                            data-bind="value: relation" />
                     </div>
                     <button type="button" onclick="gen()">Generate</button>
                 </div>
@@ -51,8 +63,13 @@
                                 <label for="txData">Basis:</label>
                                 <input type="text" name="txData" id="txData" data-bind="value: txData" />
                             </div>
+
+                            <div class="input">
+                                <label for="txImage">Image:</label>
+                                <input type="text" name="txImage" id="txImage" data-bind="value: txImage" readonly />
+                            </div>
                         </div>
-                        <i class="fa fa-times-circle del" data-bind="click: $root.rmTx"></i>
+                        <i class="fa fa-times-circle del" data-bind="click: $root.rmTx"><!--delete--></i>
                     </div>
                     <!-- /ko -->
                     <div class="buttons">
@@ -63,7 +80,7 @@
                 </div>
             </div>
             <div class="canvas">
-                <canvas id="canvas" height="200" width="200"></canvas>
+                <canvas id="canvas" height="400" width="400"></canvas>
             </div>
         </div>
         <script src="knockout.js"></script>

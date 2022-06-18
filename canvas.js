@@ -1,3 +1,5 @@
+const WIDTH = 400;
+const HEIGHT = 400;
 function canvas_arrow(context, fromx, fromy, tox, toy) {
     var headlen = 10; // length of head in pixels
     var dx = tox - fromx;
@@ -24,8 +26,6 @@ function gen () {
 
     cdcd = codomain.split(':')[0];
     cd = codomain.split(':')[1];
-
-
 
     darr = d.split(',');
     cdarr = cd.split(',');
@@ -107,13 +107,14 @@ function clear () {
 
 function clearCanvas() {
     cc = document.getElementById('canvas');
-    cc.width = 200;
-    cc.height = 200;
+    cc.width = WIDTH;
+    cc.height = HEIGHT;
     ctx = cc.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2;
     const W = ctx.canvas.width, H = ctx.canvas.height;
-    ctx.setTransform(1, 0, 0, 1, -50,20);
+    // ctx.setTransform(1, 0, 0, 1, -50,20);
+    ctx.translate(canvas.width/2,canvas.height/2);
     return ctx;
 }
 
@@ -135,7 +136,8 @@ function txBasis () {
     let ctx = clearCanvas();
 
     ctx.beginPath();
-    canvas_arrow(ctx, 0, 0, 170, 170);
+    canvas_arrow(ctx, 0, HEIGHT / 2, 0, -HEIGHT / 2);
+    canvas_arrow(ctx, -WIDTH / 2, 0, WIDTH / 2, 0);
     ctx.stroke();
 
     return ctx;
@@ -144,60 +146,132 @@ function txBasis () {
 clear();
 
 function transform (input, tx, basis) {
-    let pts = input.match(/[A-Z]'*\s*\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)/g)
-        .map(x => x.split(' ').join(''));
+    let ref = basis.split(' ').join('').toLowerCase();
+    if (tx == 1) { // Reflection
+        mapper = pt => {
+            let fn = x => x;
 
-    mapper = ptStr => {
-        let ptArr = ptStr.match(/([A-Z]'*)\s*\(((-?)\d+(\.\d+)?),(\s*(-?)\d+(\.\d+)?)\)/);
-        let ptInfo = {
-            p: ptArr[1],
-            x: +ptArr[2],
-            y: +ptArr[5],
-        };
-
-        let fn = x => x;
-
-        switch (basis.split(' ').join('').toLowerCase()) {
-            case 'y=0':
-            case 'x-axis':
-            case 'xaxis':
-                fn = x => ({
-                    p: x.p + "'",
-                    x: x.x,
-                    y: -x.y,
-                });
-                break;
-            case 'x=0':
-            case 'y-axis':
-            case 'yaxis':
-                fn = x => ({
-                    p: x.p + "'",
-                    x: -x.x,
-                    y: x.y,
-                });
-                break;
-            case 'y=x':
-            case 'x=y':
-                fn = x => ({
-                    p: x.p + "'",
-                    x: x.y,
-                    y: x.x,
-                });
-                break;
-            default:
-                fn = x => ({
-                    p: x.p + "'",
-                    x: x.x,
-                    y: x.y,
-                });
-                break;
+            switch (ref) {
+                case 'y=0':
+                case 'x-axis':
+                case 'xaxis':
+                    fn = x => ({
+                        p: x.p + "'",
+                        x: x.x,
+                        y: -x.y,
+                    });
+                    break;
+                case 'x=0':
+                case 'y-axis':
+                case 'yaxis':
+                    fn = x => ({
+                        p: x.p + "'",
+                        x: -x.x,
+                        y: x.y,
+                    });
+                    break;
+                case 'y=x':
+                case 'x=y':
+                    fn = x => ({
+                        p: x.p + "'",
+                        x: x.y,
+                        y: x.x,
+                    });
+                    break;
+                default:
+                    if (ref.match(/x\s*=\s*-?\d+/)) {
+                        let h = +ref.match(/x\s*=\s*(-?\d+)/)[1];
+                        fn = x => ({
+                            p: x.p + "'",
+                            x: 2 * h - x.x,
+                            y: x.y,
+                        });
+                    } else if (ref.match(/y\s*=\s*-?\d+/)) {
+                        let k = +ref.match(/y\s*=\s*(-?\d+)/)[1];
+                        fn = x => ({
+                            p: x.p + "'",
+                            x: x.x,
+                            y: 2 * k - x.y,
+                        });
+                    }
+                    break;
+            }
+            let res = fn(pt);
+            return res;
         }
-        let res = fn(ptInfo);
-        return `${res.p}(${res.x}, ${res.y})`;
+    } else if (tx == 3) { // Translation
+        mapper = pt => {
+            if (ref.match(/\(-?\d+,\s*-?\d+\),\s*\(-?\d+,\s*-?\d+\)/)) {
+                let arr = ref.match(/\((-?\d+),\s*(-?\d+)\),\s*\((-?\d+),\s*(-?\d+)\)/);
+                let v = {
+                    x: +arr[3] - arr[1],
+                    y: +arr[4] - arr[2],
+                };
+
+                return {
+                    p: pt.p + "'",
+                    x: pt.x + v.x,
+                    y: pt.y + v.y,
+                };
+            } else if (ref.match(/\(-?\d+,\s*-?\d+\)/)) {
+                let arr = ref.match(/\((-?\d+),\s*(-?\d+)\)/);
+                let v = {
+                    x: +arr[1],
+                    y: +arr[2]
+                };
+
+                return {
+                    p: pt.p + "'",
+                    x: pt.x + v.x,
+                    y: pt.y + v.y,
+                };
+            }
+        }
+    } else if (tx == 2) {
+        mapper = pt => {
+            if (ref.match(/\[\(-?\d+,\s*-?\d+\),\s*[+-]?\d+\]/)) {
+                let arr = ref.match(/\[\((-?\d+),\s*(-?\d+)\),\s*([+-]?\d+)\]/);
+                let [a, b, theta] = arr.slice(1).map(Number);
+                switch (theta) {
+                    case 90:
+                    case -270:
+                        return {
+                            p: pt.p + "'",
+                            x: -pt.y + a + b,
+                            y: pt.x - a + b,
+                        };
+                    case -90:
+                    case 270:
+                        return {
+                            p: pt.p + "'",
+                            x: pt.y + a - b,
+                            y: -pt.x + a + b,
+                        };
+                    case 180:
+                    case -180:
+                        return {
+                            p: pt.p + "'",
+                            x: -pt.x + 2 * a,
+                            y: -pt.y + 2 * b,
+                        };
+                }
+            }
+        }
+    } else if (tx == 4) {
+        mapper = pt => {
+            if (ref.match(/\[\(-?\d+,\s*-?\d+\),\s*[+-]?[0-9/.]+\]/)) {
+                let arr = ref.match(/\[\((-?\d+),\s*(-?\d+)\),\s*([+-]?[0-9/.]+)\]/);
+                let [a, b, k] = arr.slice(1).map(Number);
+                return {
+                    p: pt.p + "'",
+                    x: k * (pt.x - a) + a,
+                    y: k * (pt.y - b) + b,
+                };
+            }
+        }
     }
 
-    let out = pts.map(mapper).join(', ');
-    console.log(input, '---' + basis + '--->', out);
+    let out = input.map(mapper);
     return out;
 }
 
@@ -207,25 +281,74 @@ function Transformation (data) {
     var self = this;
     self.tx = ko.observable(1);
     self.txData = ko.observable(list[rnd]);
+    self.txImage = ko.observable();
     self.tx.subscribe(x => {
         self.txData(null);
     });
 }
 
+function strToPt (str) {
+    let pts = str.match(/[A-Z]'*\s*\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)/g)
+        .map(x => x.split(' ').join(''));
+
+    return pts.map(ptStr => {
+        let ptArr = ptStr.match(/([A-Z]'*)\s*\(((-?)\d+(\.\d+)?),(\s*(-?)\d+(\.\d+)?)\)/);
+        return {
+            p: ptArr[1],
+            x: +ptArr[2],
+            y: +ptArr[5],
+        };
+    });
+}
+
+function plot (ctx, pts, scale = 10) {
+    ctx.beginPath();
+    start = pts[0];
+    ctx.moveTo(start.x * scale, -start.y * scale);
+    ctx.fillText(start.p + '(' + start.x + ', ' + start.y + ')', start.x * scale, -start.y * scale);
+    pts.slice(1).map(pt => {
+        ctx.lineTo(pt.x * scale, -pt.y * scale)
+        ctx.fillText(pt.p + '(' + pt.x + ', ' + pt.y + ')', pt.x * scale, -pt.y * scale);
+    });
+    ctx.closePath();
+    ctx.stroke();
+}
+
 function canVM () {
     var self = this;
 
-    self.txPts = ko.observable('A(1,2), B(3,4)');
+    self.txPts = ko.observable('A(1,2), B(5,2), C(3,5)');
 
     self.ctx = ko.observable();
 
+    self.domain = ko.observable('1,2,3');
+    self.codomain = ko.observable('5,7,9,10');
+    self.relation = ko.observable('');
+    self.fn = ko.observable('2x+3');
+
+    self.fn.subscribe(f => {
+        // self.relation();
+    });
+
     self.fnGen = gen;
     self.txGen = () => {
+        let arr = [];
+        self.ctx(self.chapters[self.chapter() - 1].ctxClear());
+        self.ctx().beginPath();
+        let start = strToPt(self.txPts());
+        // plot(self.ctx(), start);
+        arr.push(start);
         self.txList().reduce((a, b) => {
             let pt = transform(a, b.tx(), b.txData());
-
+            b.txImage(pt.map(x => x.p + '(' + x.x + ', ' + x.y + ')').join(', '));
+            arr.push(pt);
+            // plot(self.ctx(), pt);
             return pt;
-        }, self.txPts());
+        }, start);
+
+        let max = Math.max(...arr.map(x => x.map(y => [y.x, y.y]).flat()).flat().map(x => Math.abs(x)));
+        scale = (WIDTH / 2 - 50) / max;
+        arr.map(x => plot(self.ctx(), x, scale));
     };
     self.gen = ko.observable();
 
@@ -240,7 +363,7 @@ function canVM () {
         { id: 3, name: 'Translation' },
         { id: 4, name: 'Enlargement' },
     ];
-    self.chapter = ko.observable(1);
+    self.chapter = ko.observable();
 
     self.txList = ko.observableArray([new Transformation({})]);
 
@@ -253,9 +376,10 @@ function canVM () {
     };
 
     self.chapter.subscribe(ch => {
-        self.ctx(self.chapters[ch - 1].ctxClear());
         self.gen(self.chapters[ch - 1].gen);
     });
+
+    self.chapter(2);
 
     self.generate = () => self.gen()();
 
