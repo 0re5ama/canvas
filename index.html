@@ -24,25 +24,28 @@
 
                     <div class="input">
                         <label for="domain">Domain:</label>
-                        <input class="lbl" type="text" name="domainname" id="domain-name" />
+                        <input class="lbl" type="text" name="domainname" id="domain-name"
+							data-bind="value: domainName" />
                         <input type="text" name="domain" id="domain"
                             data-bind="value: domain" />
                     </div>
 
                     <div class="input">
                         <label for="codomain">Co-Domain:</label>
-                        <input class="lbl" type="text" name="codomainname" id="codomain-name" />
+                        <input class="lbl" type="text" name="codomainname" id="codomain-name"
+							data-bind="value: codomainName" />
                         <input type="text" name="codomain" id="codomain"
                             data-bind="value: codomain" />
                     </div>
 
                     <div class="input">
                         <label for="rel">Relation:</label>
-                        <input class="lbl" type="text" name="relname" id="rel-name" />
+                        <input class="lbl" type="text" name="relname" id="rel-name"
+							data-bind="value: relName"/>
                         <input type="text" name="relation" id="rel"
                             data-bind="value: relation" />
                     </div>
-                    <button type="button" onclick="gen()">Generate</button>
+                    <button type="button" data-bind="click: generate">Generate</button>
                 </div>
 
                 <div class="container" data-bind="visible: chapter() == 2">
@@ -84,6 +87,7 @@
             </div>
         </div>
         <script src="knockout.js"></script>
+        <script src="math.js"></script>
         <script src="canvas.js"></script>
     </body>
 </html>
