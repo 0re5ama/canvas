@@ -1,7 +1,7 @@
 const WIDTH = 400;
 const HEIGHT = 400;
 const VENNGAP = 150;
-const VENNWIDTH = 100;
+const VENNWIDTH = 50;
 const VENNHEIGHT = 100;
 function canvas_arrow(context, fromx, fromy, tox, toy) {
 	var headlen = 10; // length of head in pixels
@@ -39,7 +39,7 @@ function gen (domain, codomain, rel) {
 	dgap = VENNGAP / (dlen + 1);
 	cdgap = VENNGAP / (cdlen + 1);
 
-	dpoints = darr.map((x, i) => [-VENNWIDTH - 5, -VENNWIDTH + 25 + 4.5 + dgap * (i + 1)]);
+	dpoints = darr.map((x, i) => [-VENNWIDTH - 5, -VENNHEIGHT + 25 + 4.5 + dgap * (i + 1)]);
 	darr.map((x, i) => {
 		if ('0123456789'.includes(x.toString()[0]))
 		ctx.font = "18px Cambria";
@@ -49,25 +49,26 @@ function gen (domain, codomain, rel) {
 		ctx.fillText(x, ...dpoints[i])
 	});
 
-	cdpoints = cdarr.map((x, i) => [VENNWIDTH - 5, -VENNWIDTH + 25 + 4.5 + cdgap * (i + 1)]);
+	cdpoints = cdarr.map((x, i) => [VENNWIDTH - 5, -VENNHEIGHT + 25 + 4.5 + cdgap * (i + 1)]);
 	cdarr.map((x, i) => {
 		if ('0123456789'.includes(x.toString()[0]))
 		ctx.font = "18px Cambria";
 		else
 		ctx.font = "italic 18px Cambria";
 		ctx.fillText(x, ...cdpoints[i])
+		console.log(cdpoints);
 	});
 
 	ctx.font = "italic 18px Cambria";
-	ctx.fillText(dd, -VENNWIDTH - 5, -VENNWIDTH + 25 - 10);
-	ctx.fillText(cdcd, VENNWIDTH - 5, -VENNWIDTH + 25 - 10)
-	ctx.fillText(rname, 0, -115);
+	ctx.fillText(dd, -VENNWIDTH - 5, -VENNHEIGHT + 25 - 10);
+	ctx.fillText(cdcd, VENNWIDTH - 5, -VENNHEIGHT + 25 - 10)
+	ctx.fillText(rname, 0, -100);
 
 	arrarr = rarr.map(x => {
 		pi = x.split(',')[0];
 		im = x.split(',')[1];
-		dix = -VENNWIDTH + 25 + dgap * (darr.indexOf(pi) + 1);
-		cdix = -VENNWIDTH + 25 + cdgap * (cdarr.indexOf(+im) + 1);
+		dix = -VENNHEIGHT + 25 + dgap * (darr.indexOf(pi) + 1);
+		cdix = -VENNHEIGHT + 25 + cdgap * (cdarr.indexOf(+im) + 1);
 		from_x = -VENNWIDTH + 10;
 		from_y = dix;
 		to_x = VENNWIDTH - 10;
@@ -80,11 +81,11 @@ function gen (domain, codomain, rel) {
 	ctx.stroke();
 
 	ctx.beginPath();
-	ctx.arc(0, 95, 200,-Math.PI / 3.1,Math.PI + Math.PI / 3.1,true);
+	ctx.arc(0, 0, 90,-Math.PI / 3.1,Math.PI + Math.PI / 3.1, true);
 	ctx.stroke();
 
 	tox = 0;
-	toy = -105;
+	toy = -90;
 	headlen = 10;
 	angle = Math.atan2(0, 5);
 	ctx.beginPath();
